@@ -98,8 +98,11 @@ build_pdfiumAndroid() {
         
         # Copy the built libjniPdfium.so to the jni/lib directory for packaging
         echo "Copying libjniPdfium.so for ${ABI}"
-        cp -fv ${BUILD_ROOT}/pdfiumAndroid/${ABI}/libjniPdfium.so src/main/jni/lib/${ABI}/libjniPdfium.so
-        check_command_result "copying libjniPdfium.so for ${ABI}"
+        cp ${BUILD_ROOT}/pdfiumAndroid/${ABI}/libjniPdfium.so src/main/jni/lib/${ABI}/
+
+        # Copy the correct libc++_shared.so from the NDK for each ABI
+        echo "Copying libc++_shared.so for ${ABI}"
+        cp $NDK_ROOT/sources/cxx-stl/llvm-libc++/libs/${ABI}/libc++_shared.so src/main/jni/lib/${ABI}/
     done
 }
 
