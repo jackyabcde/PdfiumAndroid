@@ -2,7 +2,7 @@
 
 # This script can be used to build PdfiumAndroid library (libjniPdfium) and its dependent libraries(libpng and libfreetype2).
 
-export NDK_ROOT=/d/Android/ndk/28.2.13676358
+export NDK_ROOT=~/Library/Android/sdk/ndk/28.2.13676358
 
 export BUILD_ROOT="builddir"
 rm -fr ${BUILD_ROOT}
@@ -77,6 +77,38 @@ build_libfreetype2() {
         cp ${BUILD_DIR}/libfreetype.so src/main/jni/lib/${ABI}/libmodft2.so
     done
 }
+copy_ndk_library_for() {
+    local ABI="$1"
+    local SO_FIle="$2"
+    local DEST="$3"
+    local HOST="darwin-x86_64"  # macOS host
+
+    echo "enter copy_ndk_library_for"
+    # Map ABI to target triple
+    local TRIPLE=""
+    case "$ABI" in
+        armeabi-v7a) TRIPLE="arm-linux-androideabi" ;;
+        arm64-v8a)   TRIPLE="aarch64-linux-android" ;;
+        x86)         TRIPLE="i686-linux-android" ;;
+        x86_64)      TRIPLE="x86_64-linux-android" ;;
+        *) echo "❌ Unsupported ABI: $ABI"; return 1 ;;
+    esac
+  echo "TRIPLE: $TRIPLE"
+    # Construct source and destination paths
+    local SRC="$NDK_ROOT/toolchains/llvm/prebuilt/$HOST/sysroot/usr/lib/$TRIPLE/$SO_FIle"
+    echo "SRC: $SRC"
+
+    # Copy if exists
+    if [ -f "$SRC" ]; then
+        mkdir -p "$DEST"
+        cp "$SRC" "$DEST/$SO_FIle"
+        echo "✅ Copied $SO_FIle for $ABI → $DEST"
+    else
+        echo "❌ File not found: $SRC"
+        return 1
+    fi
+}
+
 
 build_pdfiumAndroid() {
 
@@ -89,7 +121,7 @@ build_pdfiumAndroid() {
             -DCMAKE_SYSTEM_NAME=Android \
             -DCMAKE_ANDROID_ARCH_ABI=${ABI} \
             -DANDROID_ABI=${ABI} \
-            -DANDROID_PLATFORM=android-26 \
+            -DANDROID_PLATFORM=android-21 \
             -DANDROID_SUPPORT_FLEXIBLE_PAGE_SIZES=ON
         check_command_result "configuring pdfiumAndroid"
 
@@ -102,7 +134,8 @@ build_pdfiumAndroid() {
 
         # Copy the correct libc++_shared.so from the NDK for each ABI
         echo "Copying libc++_shared.so for ${ABI}"
-        cp $NDK_ROOT/sources/cxx-stl/llvm-libc++/libs/${ABI}/libc++_shared.so src/main/jni/lib/${ABI}/
+#        cp $NDK_ROOT/sources/cxx-stl/llvm-libc++/libs/${ABI}/libc++_shared.so src/main/jni/lib/${ABI}/
+        copy_ndk_library_for "${ABI}" "libc++_shared.so" "src/main/jni/lib/${ABI}/"
     done
 }
 
