@@ -1,8 +1,34 @@
 #!/bin/bash -i
 
 # This script can be used to build PdfiumAndroid library (libjniPdfium) and its dependent libraries(libpng and libfreetype2).
+export JAVA_HOME=$(/usr/libexec/java_home -v 17)
 
-export NDK_ROOT=~/Library/Android/sdk/ndk/28.2.13676358
+if [ -z "$JAVA_HOME" ]; then
+    echo "❌ Java 17 not found. Please install JDK 17 and try again."
+    exit 1
+else
+    echo "✅ JAVA_HOME set to $JAVA_HOME"
+fi
+
+
+
+# check the lastest ndk 
+# or you can hard code the ndk
+# export NDK_ROOT=~/Library/Android/sdk/ndk/28.2.13676358
+NDK_DIR=~/Library/Android/sdk/ndk
+LATEST_NDK=$(ls -1 "$NDK_DIR" | sort -rV | head -n 1)
+
+if [ -z "$LATEST_NDK" ]; then
+    echo "❌ No NDK versions found in $NDK_DIR"
+    exit 1
+else
+    export NDK_ROOT="$NDK_DIR/$LATEST_NDK"
+    echo "✅ NDK_ROOT set to $NDK_ROOT"
+fi
+
+
+
+
 
 export BUILD_ROOT="builddir"
 rm -fr ${BUILD_ROOT}
@@ -216,4 +242,11 @@ fi
 
 
 
-echo "Build finished Ok"
+echo "✅ Build completed successfully!"
+echo "📦 To generate the release AAR, run:"
+echo "   ./gradlew assembleRelease"
+echo "📁 Your output will be located at:"
+echo "   build/outputs/aar/PdfiumAndroid-2.0.1-release.aar"
+
+
+
