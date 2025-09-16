@@ -14,5 +14,3 @@ src/main/obj
 builddir/*
 freetype-*
 libpng
-src/main/jni/lib/x86/libjniPdfium.so
-*.so
