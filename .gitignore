@@ -1,6 +1,5 @@
 src/main/libs
 src/main/obj
-src/main/jni/lib/**/*.so
 
 *.iml
 .gradle
